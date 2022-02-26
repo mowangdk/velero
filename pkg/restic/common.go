@@ -332,6 +332,11 @@ func CmdEnv(backupLocation *velerov1api.BackupStorageLocation, credentialFileSto
 		if err != nil {
 			return []string{}, err
 		}
+	case AlibabaCloudBackend:
+		customEnv, err = getAlibabaCloudResticEnvVars(config)
+		if err != nil {
+			return []string{}, err
+		}
 	}
 
 	for k, v := range customEnv {
