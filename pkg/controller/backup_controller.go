@@ -341,6 +341,9 @@ func (c *backupController) prepareBackupRequest(backup *velerov1api.Backup) *pkg
 		request.Spec.TTL.Duration = c.defaultBackupTTL
 	}
 
+	c.logger.WithFields(logrus.Fields{
+		"requestSpec": request.Spec,
+	}).Info("show me the request spec")
 	// calculate expiration
 	request.Status.Expiration = &metav1.Time{Time: c.clock.Now().Add(request.Spec.TTL.Duration)}
 
