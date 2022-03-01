@@ -1,0 +1,42 @@
+# Copyright 2017, 2019 the Velero contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#FROM ubuntu:focal
+FROM registry.aliyuncs.com/acs/alpine:3.5
+
+#LABEL maintainer="Nolan Brubaker <brubakern@vmware.com>"
+
+#RUN apt-get update && \
+#    apt-get install -y --no-install-recommends ca-certificates wget && \
+#    wget --quiet https://hk-public-bucket.oss-cn-hongkong.aliyuncs.com/restic/restic-63bc868f && \
+#    mv restic-63bc868f /usr/bin/restic && \
+#    chmod +x /usr/bin/restic && \
+#    apt-get remove -y wget && \
+#    rm -rf /var/lib/apt/lists/*
+#USER nobody:nogroup
+
+
+RUN apk add --update curl tzdata iproute2 bash libc6-compat &&  \
+ 	rm -rf /var/cache/apk/* && \
+ 	cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+ 	echo "Asia/Shanghai" >  /etc/timezone && \
+ 	mkdir -p /lib64 && \
+ 	ln -s /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
+
+ADD bin/linux/amd64/velero /velero
+RUN chmod +x /velero
+RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
+USER 65530
+
+ENTRYPOINT ["/velero"]
