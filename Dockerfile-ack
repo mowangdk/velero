@@ -13,7 +13,21 @@
 # limitations under the License.
 
 #FROM ubuntu:focal
-FROM registry.aliyuncs.com/acs/alpine:3.5
+
+FROM --platform=$BUILDPLATFORM golang:1.15 as builder-env
+
+ENV CGO_ENABLED=0 GO111MODULE=on GOARM=${TARGETVARIANT} GOPROXY=proxy.golang.com.cn,direct
+COPY . /go/src/github.com/vmware-tanzu/velero
+
+WORKDIR /go/src/github.com/vmware-tanzu/velero
+
+RUN mkdir -p /output/bin && \
+    export GOARM=$( echo "${GOARM}" | cut -c2-) && \
+    go build -o /output/bin \
+    ./cmd/velero
+
+
+FROM --platform=$TARGETPLATFORM registry.aliyuncs.com/acs/alpine:3.5
 
 #LABEL maintainer="Nolan Brubaker <brubakern@vmware.com>"
 
@@ -34,7 +48,7 @@ RUN apk add --update curl tzdata iproute2 bash libc6-compat &&  \
  	mkdir -p /lib64 && \
  	ln -s /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 
-ADD bin/linux/amd64/velero /velero
+COPY --from=builder-env /output/bin/velero /velero
 RUN chmod +x /velero
 RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
 USER 65530
