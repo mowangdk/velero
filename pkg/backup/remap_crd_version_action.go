@@ -17,6 +17,7 @@ limitations under the License.
 package backup
 
 import (
+	"strings"
 	"context"
 	"encoding/json"
 
@@ -90,6 +91,9 @@ func (a *RemapCRDVersionAction) Execute(item runtime.Unstructured, backup *v1.Ba
 	case hasSingleVersion(crd), hasNonStructuralSchema(crd), hasPreserveUnknownFields(crd):
 		log.Infof("CustomResourceDefinition %s appears to be v1beta1, fetching the v1beta version", crd.Name)
 		item, err = fetchV1beta1CRD(crd.Name, a.betaCRDClient)
+		if strings.Contains(err.Error(), "the server could not find the requested resource") {
+			return item, nil, nil
+		}
 		if err != nil {
 			return nil, nil, err
 		}
