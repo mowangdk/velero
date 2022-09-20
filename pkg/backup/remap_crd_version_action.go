@@ -91,7 +91,7 @@ func (a *RemapCRDVersionAction) Execute(item runtime.Unstructured, backup *v1.Ba
 	case hasSingleVersion(crd), hasNonStructuralSchema(crd), hasPreserveUnknownFields(crd):
 		log.Infof("CustomResourceDefinition %s appears to be v1beta1, fetching the v1beta version", crd.Name)
 		fetchItem, err := fetchV1beta1CRD(crd.Name, a.betaCRDClient)
-		log.Infof("fetchV1beta1CRD result: %v", err)
+		log.Infof("fetchV1beta1CRD fetchItem: %v, result: %v", fetchItem, err)
 		if strings.Contains(err.Error(), "the server could not find the requested resource") {
 			log.Infof("prehaps v1alpha1 crds entrys: %+v", crd.APIVersion)
 			return item, nil, nil
@@ -99,7 +99,9 @@ func (a *RemapCRDVersionAction) Execute(item runtime.Unstructured, backup *v1.Ba
 		if err != nil {
 			return nil, nil, err
 		}
-		item = fetchItem
+		if fetchItem != nil {
+			item = fetchItem
+		}
 	default:
 		log.Infof("CustomResourceDefinition %s does not appear to be v1beta1, backing up as v1", crd.Name)
 	}
