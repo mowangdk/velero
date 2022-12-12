@@ -27,7 +27,7 @@ RUN mkdir -p /output/bin && \
     ./cmd/velero
 
 
-FROM --platform=$TARGETPLATFORM registry.aliyuncs.com/acs/alpine:3.5
+FROM --platform=$TARGETPLATFORM registry.cn-hangzhou.aliyuncs.com/acs/alpine:3.16-update
 
 #LABEL maintainer="Nolan Brubaker <brubakern@vmware.com>"
 
