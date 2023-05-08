@@ -46,7 +46,7 @@ RUN apk add --update curl tzdata iproute2 bash libc6-compat &&  \
  	cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
  	echo "Asia/Shanghai" >  /etc/timezone && \
  	mkdir -p /lib64 && \
- 	ln -s /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
+ 	ln -sf /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 
 COPY --from=builder-env /output/bin/velero /velero
 RUN chmod +x /velero

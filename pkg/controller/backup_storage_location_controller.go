@@ -124,7 +124,6 @@ func (r *BackupStorageLocationReconciler) Reconcile(ctx context.Context, req ctr
 				location.Status.Message = ""
 			}
 			location.Status.Phase = velerov1api.BackupStorageLocationPhaseAvailable
-			location.Status.Message = ""
 			if err := r.Client.Patch(r.Ctx, &location, client.MergeFrom(original)); err != nil {
 				log.WithError(err).Error("Error updating BackupStorageLocation phase")
 			}
