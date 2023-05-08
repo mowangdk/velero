@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -107,16 +106,25 @@ func (r *BackupStorageLocationReconciler) Reconcile(ctx context.Context, req ctr
 		defer func() {
 			location.Status.LastValidationTime = &metav1.Time{Time: time.Now().UTC()}
 			if err != nil {
-				log.Info("BackupStorageLocation is invalid, marking as unavailable")
-				err = errors.Wrapf(err, "BackupStorageLocation %q is unavailable", location.Name)
-				unavailableErrors = append(unavailableErrors, err.Error())
-				location.Status.Phase = velerov1api.BackupStorageLocationPhaseUnavailable
+				/*
+					log.Info("BackupStorageLocation is invalid, marking as unavailable")
+					err = errors.Wrapf(err, "BackupStorageLocation %q is unavailable", location.Name)
+					unavailableErrors = append(unavailableErrors, err.Error())
+					location.Status.Phase = velerov1api.BackupStorageLocationPhaseUnavailable
+					location.Status.Message = err.Error()
+				*/
+				log.Warnf("BackupStorageLocation %s: %s", location.Name, err.Error())
 				location.Status.Message = err.Error()
-			} else {
-				log.Info("BackupStorageLocations is valid, marking as available")
-				location.Status.Phase = velerov1api.BackupStorageLocationPhaseAvailable
+			} else { /*
+					log.Info("BackupStorageLocations is valid, marking as available")
+					location.Status.Phase = velerov1api.BackupStorageLocationPhaseAvailable
+					location.Status.Message = ""
+				*/
+				log.Info("BackupStorageLocations %s is valid", location.Name)
 				location.Status.Message = ""
 			}
+			location.Status.Phase = velerov1api.BackupStorageLocationPhaseAvailable
+			location.Status.Message = ""
 			if err := r.Client.Patch(r.Ctx, &location, client.MergeFrom(original)); err != nil {
 				log.WithError(err).Error("Error updating BackupStorageLocation phase")
 			}
