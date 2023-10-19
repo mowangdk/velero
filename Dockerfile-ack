@@ -18,14 +18,14 @@ FROM --platform=$BUILDPLATFORM golang:1.17 as builder-env
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-RUN env GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d '/') CGO_ENABLED=0 GO111MODULE=on GOPROXY=proxy.golang.com.cn,direct
+
 COPY . /go/src/github.com/vmware-tanzu/velero
 
 WORKDIR /go/src/github.com/vmware-tanzu/velero
 
-RUN mkdir -p /output/bin && \
-    go build -o /output/bin \
-    ./cmd/velero
+RUN mkdir -p /output/bin 
+RUN env GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d '/') CGO_ENABLED=0 GO111MODULE=on GOPROXY=proxy.golang.com.cn,direct \
+    go build -o /output/bin ./cmd/velero
 
 
 FROM --platform=$TARGETPLATFORM registry.cn-hangzhou.aliyuncs.com/acs/alpine:3.16-update
