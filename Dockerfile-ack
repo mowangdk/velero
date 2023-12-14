@@ -28,7 +28,7 @@ RUN env GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d '/') CGO_ENABLED=0 GO111MODUL
     go build -o /output/bin ./cmd/velero
 
 
-FROM --platform=$TARGETPLATFORM registry.cn-hangzhou.aliyuncs.com/acs/alpine:3.16-base 
+FROM --platform=$TARGETPLATFORM registry.cn-hangzhou.aliyuncs.com/acs/alpine:3.16-update 
 
 RUN apk add --update curl tzdata iproute2 libc6-compat &&  \
  	rm -rf /var/cache/apk/* && \
@@ -36,8 +36,9 @@ RUN apk add --update curl tzdata iproute2 libc6-compat &&  \
  	echo "Asia/Shanghai" >  /etc/timezone 
 
 COPY --from=builder-env /output/bin/velero /velero
-RUN chmod +x /velero
-RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
+RUN chmod +x /velero && \
+  	addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot && \
+	rm -rf /bin/sh
 USER 65530
 
 ENTRYPOINT ["/velero"]
