@@ -38,7 +38,8 @@ RUN apk add --update curl tzdata iproute2 libc6-compat &&  \
 COPY --from=builder-env /output/bin/velero /velero
 RUN chmod +x /velero && \
   	addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot && \
-	rm -rf /bin/sh
+	rm -rf /sbin/* && \
+	rm -rf /bin/* 
 USER 65530
 
 ENTRYPOINT ["/velero"]
