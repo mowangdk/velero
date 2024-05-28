@@ -1,0 +1,45 @@
+# Copyright 2017, 2019 the Velero contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#FROM ubuntu:focal
+
+FROM --platform=$BUILDPLATFORM golang:1.17 as builder-env
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+COPY . /go/src/github.com/vmware-tanzu/velero
+
+WORKDIR /go/src/github.com/vmware-tanzu/velero
+
+RUN mkdir -p /output/bin 
+RUN env GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d '/') CGO_ENABLED=0 GO111MODULE=on GOPROXY=proxy.golang.com.cn,direct \
+	go build -o /output/bin ./cmd/velero
+
+
+FROM --platform=$TARGETPLATFORM registry.cn-hangzhou.aliyuncs.com/acs/alpine:3.16-update 
+
+RUN apk add --update curl tzdata iproute2 libc6-compat &&  \
+	rm -rf /var/cache/apk/* && \
+	cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+	echo "Asia/Shanghai" >  /etc/timezone 
+
+COPY --from=builder-env /output/bin/velero /velero
+RUN chmod +x /velero && \
+	addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot && \
+	rm -rf /sbin/* && \
+	rm -rf /bin/* 
+USER 65530
+
+ENTRYPOINT ["/velero","--features=EnableAPIGroupVersions"]
