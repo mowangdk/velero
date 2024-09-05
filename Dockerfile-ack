@@ -14,7 +14,7 @@
 
 #FROM ubuntu:focal
 
-FROM --platform=$BUILDPLATFORM golang:1.17 as builder-env
+FROM --platform=$BUILDPLATFORM golang:1.22-bookworm as builder-env
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM

@@ -585,6 +585,10 @@ func (ctx *restoreContext) execute() (results.Result, results.Result) {
 			gvr := schema.ParseGroupResource(informerResource.resource).WithVersion(version)
 			_, _, err := ctx.discoveryHelper.ResourceFor(gvr)
 			if err != nil {
+				if gvr.Group == "extensions" && gvr.Resource == "ingresses" && gvr.Version == "v1beta1" {
+					ctx.log.Infof("resource for %v", gvr)
+					ctx.dynamicInformerFactory.factory.ForResource(gvr)
+				}
 				ctx.log.Infof("failed to create informer for %s: %v", gvr, err)
 				continue
 			}
